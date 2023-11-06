@@ -41,7 +41,13 @@ async function run() {
             }).send({ success: true })
         })
 
-
+        // get a singelService for service detail
+        app.get("/service/:id", async (req, res) => {
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
+            const result = await serviceCollection.find(query).toArray()
+            res.send(result)
+        })
         // get apis for  service for home page 
         app.get("/all-service", async (req, res) => {
             const result = (await serviceCollection.find().toArray()).reverse();
