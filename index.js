@@ -27,11 +27,13 @@ async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
+        const serviceCollection = client.db("babyCare").collection("services");
+
         // generate token
         app.post("/jsonwebtoken", (req, res) => {
             const userEmail = req.body;
             const token = jwt.sign(userEmail, process.env.ACCESS_TOKEN, { expiresIn: "30m" })
-            console.log(token)
+            // console.log(token)
             res.cookie("token", token, {
                 httpOnly: false,
                 secure: true,
@@ -39,6 +41,25 @@ async function run() {
             }).send({ success: true })
         })
 
+
+        // get apis for  service for home page 
+        app.get("/all-service", async (req, res) => {
+            const result = (await serviceCollection.find().toArray()).reverse();
+            res.send(result)
+        })
+        // get apis for 6 service for home page 
+        app.get("/service6", async (req, res) => {
+            const result = (await serviceCollection.find().toArray()).reverse().slice(0, 6);
+            res.send(result)
+        })
+
+        // add service related apis
+        app.post("/add-service", async (req, res) => {
+            const service = req.body;
+            // console.log(service)
+            const result = await serviceCollection.insertOne(service);
+            res.send(result)
+        })
         // update Products
         // app.put("/updateProduct/:id", async (req, res) => {
         //     const id = req.params.id;
