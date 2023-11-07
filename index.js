@@ -8,7 +8,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 // add middleware
 app.use(cors({
-    origin: ["http://localhost:5173"],
+    origin: ["http://localhost:5173"], //["https://littlestars-care.web.app"],
     credentials: true
 }))
 app.use(cookieParser())
@@ -23,11 +23,13 @@ const client = new MongoClient(uri, {
     }
 });
 
+
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
         const serviceCollection = client.db("babyCare").collection("services");
+        const bookingsCollection = client.db("babyCare").collection("bookings");
 
         // generate token
         app.post("/jsonwebtoken", (req, res) => {
@@ -40,12 +42,27 @@ async function run() {
                 sameSite: "none"
             }).send({ success: true })
         })
+        // delete api from book
+        app.delete("/bookings-delete/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await bookingsCollection.deleteOne(query)
+            res.send(result)
+            // console.log(id)
+        })
 
         // get a singelService for service detail
         app.get("/service/:id", async (req, res) => {
             const id = req.params.id
             const query = { _id: new ObjectId(id) }
             const result = await serviceCollection.find(query).toArray()
+            res.send(result)
+        })
+        // get bookings data api
+        app.get("/my-bookings", async (req, res) => {
+            const email = req.query.email;
+            const query = { userEmail: email }
+            const result = await bookingsCollection.find(query).toArray()
             res.send(result)
         })
         // get apis for  service for home page 
@@ -58,7 +75,12 @@ async function run() {
             const result = (await serviceCollection.find().toArray()).reverse().slice(0, 6);
             res.send(result)
         })
-
+        // add bookings api
+        app.post("/books", async (req, res) => {
+            const bookings = req.body;
+            const result = await bookingsCollection.insertOne(bookings)
+            res.send(result)
+        })
         // add service related apis
         app.post("/add-service", async (req, res) => {
             const service = req.body;
@@ -66,6 +88,7 @@ async function run() {
             const result = await serviceCollection.insertOne(service);
             res.send(result)
         })
+
         // update Products
         // app.put("/updateProduct/:id", async (req, res) => {
         //     const id = req.params.id;
@@ -95,7 +118,7 @@ async function run() {
 
 
         // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
+        // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
