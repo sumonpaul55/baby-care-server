@@ -157,11 +157,13 @@ async function run() {
                         location: updateService.location
                     }
                 }
+
+                const result = await serviceCollection.updateOne(filter, updateDocs, options)
+                res.send(result)
             } catch (err) {
                 res.send(err)
             }
-            const result = await serviceCollection.updateOne(filter, updateDocs, options)
-            res.send(result)
+
         })
 
 
