@@ -58,6 +58,13 @@ async function run() {
             const result = await bookingsCollection.deleteOne(query)
             res.send(result)
         })
+        // get specific data for upadate
+        app.get("/my-serviceData/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await serviceCollection.find(query).toArray();
+            res.send(result)
+        })
         // getting pendinng service api
         app.get("/pending-service", async (req, res) => {
             const owneremail = req.query.email;
@@ -129,32 +136,33 @@ async function run() {
             }
         })
 
-        // update Products
-        // app.put("/updateProduct/:id", async (req, res) => {
-        //     const id = req.params.id;
-        //     const filter = { _id: new ObjectId(id) }
-        //     const product = req.body;
-        //     const updateProduct = {
-        //         $set: {
-        //             productName: product.productName,
-        //             porductImg: product.porductImg,
-        //             brandName: product.brandName,
-        //             productType: product.productType,
-        //             desc: product.desc,
-        //             rate: product.rate,
-        //             price: product.price
-        //         },
-        //     };
-        //     const result = await productCollections.updateOne(filter, updateProduct)
-        //     res.send(result)
-        // })
-        // delete data from cart
-        // app.delete("/deleteCart/:id", async (req, res) => {
-        //     const deleteid = req.params.id;
-        //     const query = { _id: new ObjectId(deleteid) }
-        //     const result = await cartCollection.deleteOne(query)
-        //     res.send(result)
-        // })
+        app.put("/update-myService/:id", async (req, res) => {
+            try {
+                const id = req.params.id;
+                const filter = { _id: new Object(id) }
+                const updateService = req.body;
+                const options = { upsert: true }
+                const updateDocs = {
+                    $set: {
+                        serviceName: updateService.serviceName,
+                        serviceArea: updateService.serviceArea,
+                        serviceDescription: updateService.serviceDescription,
+                        serviceImg: updateService.serviceImg,
+                        price: updateService.price,
+                        name: updateService.name,
+                        email: updateService.email,
+                        about: updateService.about,
+                        providerImg: updateService.providerImg,
+                        category: updateService.category,
+                        location: updateService.location
+                    }
+                }
+            } catch (err) {
+                res.send(err)
+            }
+            const result = await serviceCollection.updateOne(filter, updateDocs, options)
+            res.send(result)
+        })
 
 
         // Send a ping to confirm a successful connection
