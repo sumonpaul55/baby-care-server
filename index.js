@@ -42,15 +42,39 @@ async function run() {
                 sameSite: "none"
             }).send({ success: true })
         })
+        // myService delete
+        app.delete("/delete-myService/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await serviceCollection.deleteOne(query)
+            res.send(result)
+            console.log(id)
+            console.log(result)
+        })
         // delete api from book
         app.delete("/bookings-delete/:id", async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const result = await bookingsCollection.deleteOne(query)
             res.send(result)
-            // console.log(id)
         })
-
+        // getting pendinng service api
+        app.get("/pending-service", async (req, res) => {
+            const owneremail = req.query.email;
+            const query = {
+                serviceProviderEmail: owneremail,
+                status: "pending"
+            }
+            const result = (await bookingsCollection.find(query).toArray()).reverse();
+            res.send(result)
+        })
+        //getting data apis for service worner
+        app.get("/my-services", async (req, res) => {
+            const owneremail = req.query.email;
+            const filter = { email: owneremail }
+            const result = (await serviceCollection.find(filter).toArray()).reverse()
+            res.send(result)
+        })
         // get a singelService for service detail
         app.get("/service/:id", async (req, res) => {
             const id = req.params.id
@@ -62,7 +86,7 @@ async function run() {
         app.get("/my-bookings", async (req, res) => {
             const email = req.query.email;
             const query = { userEmail: email }
-            const result = await bookingsCollection.find(query).toArray()
+            const result = (await bookingsCollection.find(query).toArray()).reverse()
             res.send(result)
         })
         // get apis for  service for home page 
@@ -84,9 +108,25 @@ async function run() {
         // add service related apis
         app.post("/add-service", async (req, res) => {
             const service = req.body;
-            // console.log(service)
             const result = await serviceCollection.insertOne(service);
             res.send(result)
+        })
+        // update status for my pendings works
+        app.patch("/update-booking-service-status/:id", async (req, res) => {
+            try {
+                const dataId = req.params.id;
+                const updatePart = req.body;
+                const query = { _id: new ObjectId(dataId) }
+                const updateDocs = {
+                    $set: {
+                        status: updatePart.status
+                    }
+                }
+                const result = await bookingsCollection.updateOne(query, updateDocs)
+                res.send(result)
+            } catch (err) {
+                res.send(err)
+            }
         })
 
         // update Products
