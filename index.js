@@ -22,7 +22,23 @@ const client = new MongoClient(uri, {
         deprecationErrors: true,
     }
 });
+// middler for verify token
+const verfyToken = (req, res, next) => {
+    const token = req?.cookies?.token;
+    // console.log("token in the middle ware", token)
+    if (!token) {
+        return res.status(401).send({ message: "Unauthorized Access" })
+    }
+    jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
+        if (err) {
+            return res.status(403).send({ message: "Unauthorized Access" })
+        }
+        req.user = decoded;
+        next();
+    })
 
+
+}
 
 async function run() {
     try {
@@ -34,6 +50,7 @@ async function run() {
         // generate token
         app.post("/jsonwebtoken", (req, res) => {
             const userEmail = req.body;
+            // console.log(userEmail)
             const token = jwt.sign(userEmail, process.env.ACCESS_TOKEN, { expiresIn: "30m" })
             // console.log(token)
             res.cookie("token", token, {
@@ -42,14 +59,18 @@ async function run() {
                 sameSite: "none"
             }).send({ success: true })
         })
+        // user logout delete token
+        app.post("/logout", async (req, res) => {
+            const user = req.body;
+            // console.log("logout user", user)
+            res.clearCookie("token", { maxAge: 0 }).send({ success: true })
+        })
         // myService delete
         app.delete("/delete-myService/:id", async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
             const result = await serviceCollection.deleteOne(query)
             res.send(result)
-            console.log(id)
-            console.log(result)
         })
         // delete api from book
         app.delete("/bookings-delete/:id", async (req, res) => {
@@ -57,6 +78,19 @@ async function run() {
             const query = { _id: new ObjectId(id) };
             const result = await bookingsCollection.deleteOne(query)
             res.send(result)
+        })
+        // getting simisar service api
+        app.get("/similar", async (req, res) => {
+            try {
+                const category = req.query.category;
+                const filter = { category: category }
+                const result = (await serviceCollection.find(filter).toArray()).reverse()
+                res.send(result)
+            }
+
+            catch (err) {
+                res.send(err)
+            }
         })
         // get specific data for upadate
         app.get("/my-serviceData/:id", async (req, res) => {
@@ -66,8 +100,9 @@ async function run() {
             res.send(result)
         })
         // getting pendinng service api
-        app.get("/pending-service", async (req, res) => {
+        app.get("/pending-service", verfyToken, async (req, res) => {
             const owneremail = req.query.email;
+            console.log("token info", req.user)
             const query = {
                 serviceProviderEmail: owneremail,
                 status: "pending"
@@ -76,8 +111,12 @@ async function run() {
             res.send(result)
         })
         //getting data apis for service worner
-        app.get("/my-services", async (req, res) => {
+        app.get("/my-services", verfyToken, async (req, res) => {
             const owneremail = req.query.email;
+            // console.log("verify token", req.user, owneremail)
+            if (req.user.email !== owneremail) {
+                res.status(403).send({ message: "forbidden access" })
+            }
             const filter = { email: owneremail }
             const result = (await serviceCollection.find(filter).toArray()).reverse()
             res.send(result)
@@ -94,14 +133,23 @@ async function run() {
             }
         })
         // get bookings data api
-        app.get("/my-bookings", async (req, res) => {
-            const email = req.query.email;
-            const query = { userEmail: email }
-            const result = (await bookingsCollection.find(query).toArray()).reverse()
-            res.send(result)
+        app.get("/my-bookings", verfyToken, async (req, res) => {
+            try {
+                const email = req.query.email;
+                const query = { userEmail: email }
+                if (req.user.email !== email) {
+                    res.status(403).send({ message: "forbidden access" })
+                }
+                const result = (await bookingsCollection.find(query).toArray()).reverse()
+                res.send(result)
+            }
+            catch (err) {
+                res.send(err)
+            }
         })
         // get apis for  service for home page 
         app.get("/all-service", async (req, res) => {
+            // console.log("token verify", req.user)
             const result = (await serviceCollection.find().toArray()).reverse();
             res.send(result)
         })
