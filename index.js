@@ -143,7 +143,7 @@ async function run() {
         app.put("/update-myService/:id", async (req, res) => {
             try {
                 const id = req.params.id;
-                const filter = { _id: new Object(id) }
+                const filter = { _id: new ObjectId(id) }
                 const updateService = req.body;
                 const options = { upsert: true }
                 const updateDocs = {
