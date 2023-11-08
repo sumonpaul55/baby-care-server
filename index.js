@@ -36,10 +36,7 @@ const verfyToken = (req, res, next) => {
         req.user = decoded;
         next();
     })
-
-
 }
-
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
@@ -51,10 +48,10 @@ async function run() {
         app.post("/jsonwebtoken", (req, res) => {
             const userEmail = req.body;
             // console.log(userEmail)
-            const token = jwt.sign(userEmail, process.env.ACCESS_TOKEN, { expiresIn: "30m" })
+            const token = jwt.sign(userEmail, process.env.ACCESS_TOKEN, { expiresIn: "1h" })
             // console.log(token)
             res.cookie("token", token, {
-                httpOnly: false,
+                httpOnly: true,
                 secure: true,
                 sameSite: "none"
             }).send({ success: true })
@@ -151,6 +148,11 @@ async function run() {
         app.get("/all-service", async (req, res) => {
             // console.log("token verify", req.user)
             const result = (await serviceCollection.find().toArray()).reverse();
+            res.send(result)
+        })
+        // getPopular 5 services
+        app.get("/popular-service", async (req, res) => {
+            const result = (await serviceCollection.find().toArray()).slice(0, 4)
             res.send(result)
         })
         // get apis for 6 service for home page 
