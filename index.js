@@ -99,7 +99,6 @@ async function run() {
         // getting pendinng service api
         app.get("/pending-service", verfyToken, async (req, res) => {
             const owneremail = req.query.email;
-            console.log("token info", req.user)
             const query = {
                 serviceProviderEmail: owneremail,
                 status: "pending"
