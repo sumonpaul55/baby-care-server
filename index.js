@@ -84,10 +84,14 @@ async function run() {
         })
         // get a singelService for service detail
         app.get("/service/:id", async (req, res) => {
-            const id = req.params.id
-            const query = { _id: new ObjectId(id) }
-            const result = await serviceCollection.find(query).toArray()
-            res.send(result)
+            try {
+                const id = req.params.id
+                const query = { _id: new ObjectId(id) }
+                const result = await serviceCollection.find(query).toArray()
+                res.send(result)
+            } catch (err) {
+                res.send(err)
+            }
         })
         // get bookings data api
         app.get("/my-bookings", async (req, res) => {
