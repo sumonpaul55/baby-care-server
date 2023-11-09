@@ -81,7 +81,7 @@ async function run() {
             try {
                 const category = req.query.category;
                 const filter = { category: category }
-                const result = (await serviceCollection.find(filter).toArray()).reverse()
+                const result = (await serviceCollection.find(filter).toArray()).reverse().slice(0, 4)
                 res.send(result)
             }
 
@@ -128,6 +128,7 @@ async function run() {
                 res.send(err)
             }
         })
+
         // get bookings data api
         app.get("/my-bookings", verfyToken, async (req, res) => {
             try {
@@ -143,9 +144,19 @@ async function run() {
                 res.send(err)
             }
         })
+        // getting service for update
+        app.get("/update-service/:id", async (req, res) => {
+            try {
+                const id = req.params.id
+                const query = { _id: new ObjectId(id) }
+                const result = await serviceCollection.find(query).toArray()
+                res.send(result)
+            } catch (err) {
+                res.send(err)
+            }
+        })
         // get apis for  service for home page 
         app.get("/all-service", async (req, res) => {
-            // console.log("token verify", req.user)
             const result = (await serviceCollection.find().toArray()).reverse();
             res.send(result)
         })
