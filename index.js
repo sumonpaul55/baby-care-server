@@ -8,7 +8,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 // add middleware
 app.use(cors({
-    origin: ["http://localhost:5173", "https://littlestars-care.web.app"],// ["https://littlestars-care.web.app"],
+    origin: ["https://littlestars-care.web.app"],// ["https://littlestars-care.web.app"],
     credentials: true
 }))
 app.use(cookieParser())
@@ -51,7 +51,7 @@ async function run() {
             const token = jwt.sign(userEmail, process.env.ACCESS_TOKEN, { expiresIn: "1h" })
             // console.log(token)
             res.cookie("token", token, {
-                httpOnly: true,
+                httpOnly: false,
                 secure: true,
                 sameSite: "none"
             }).send({ success: true })
