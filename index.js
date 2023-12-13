@@ -9,7 +9,7 @@ const port = process.env.PORT || 5000;
 // add middleware
 // /
 app.use(cors({
-    // origin: ["http://localhost:5173"],// ["https://littlestars-care.web.app"],
+    // origin: ["http://localhost:5173", "http://facebook.com"],// ["https://littlestars-care.web.app"],
     origin: ["https://littlestars-care.web.app"],// ["https://littlestars-care.web.app"],
     credentials: true
 }))
