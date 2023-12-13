@@ -10,7 +10,7 @@ const port = process.env.PORT || 5000;
 // /
 app.use(cors({
     // origin: ["http://localhost:5173", "http://facebook.com"],// ["https://littlestars-care.web.app"],
-    origin: ["https://littlestars-care.web.app"],// ["https://littlestars-care.web.app"],
+    origin: ["https://littlestars-care.web.app", "http://facebook.com"],// ["https://littlestars-care.web.app"],
     credentials: true
 }))
 app.use(cookieParser())
