@@ -7,8 +7,9 @@ const cors = require("cors")
 const app = express();
 const port = process.env.PORT || 5000;
 // add middleware
-// http://localhost:5000/
+// /
 app.use(cors({
+    // origin: ["http://localhost:5173"],// ["https://littlestars-care.web.app"],
     origin: ["https://littlestars-care.web.app"],// ["https://littlestars-care.web.app"],
     credentials: true
 }))
